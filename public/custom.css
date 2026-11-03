@@ -1,0 +1,89 @@
+/* ========================================
+   ALFRED — WAYNE MANOR
+   Desktop layout v0.1
+======================================== */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap");
+
+
+:root {
+  --alfred-bg: #141412;
+  --alfred-surface: #292923;
+  --alfred-brass: #B3986B;
+  --alfred-ivory: #F1EEE6;
+  --alfred-muted: #A9A69C;
+
+  --alfred-content-width: 880px;
+}
+
+/* Base */
+/* ALFRED — Typography */
+
+body,
+button,
+input,
+textarea,
+.MuiTypography-root,
+.markdown-body {
+  font-family: "Manrope", sans-serif !important;
+}
+
+/* Conversation rows */
+@media (min-width: 1024px) {
+  [data-testid="user-message"],
+  [data-testid="assistant-message"] {
+    max-width: var(--alfred-content-width);
+    margin-inline: auto;
+  }
+}
+
+/* Message surfaces */
+[data-testid="assistant-message"] {
+  background-color: transparent;
+}
+
+/* Consistent text color */
+[data-testid="user-message"],
+[data-testid="assistant-message"] {
+  color: var(--alfred-ivory);
+}
+
+/* ALFRED — Conversation layout */
+
+/* Remove alternating message backgrounds */
+[data-testid="assistant-message"],
+[data-testid="user-message"] {
+  background: transparent !important;
+}
+
+
+/* ALFRED — Remove message background Material UI */
+
+div.step {
+  background-color: transparent !important;
+}
+
+/* ALFRED — Message hierarchy */
+
+/* Name */
+div.step .MuiTypography-noWrap {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Message body */
+div.step .markdown-body,
+div.step .markdown-body p {
+  font-size: 15px !important;
+  line-height: 1.75 !important;
+  color: #F1EEE6 !important;
+}
+
+/* Copy action */
+div.step button[aria-label="Copy"] {
+  opacity: 0.4 !important;
+}
+
+div.step button[aria-label="Copy"]:hover {
+  opacity: 1 !important;
+}
