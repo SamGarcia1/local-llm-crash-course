@@ -18,7 +18,7 @@ forwarded port 8000 after launching. The first chat may download the model from
 Hugging Face and requires network access and enough memory to load it.
 
 Generation uses the pinned CTransformers wrapper's `config` dictionary with
-`max_new_tokens=25` and `temperature=0.7`. The 25-token limit can truncate replies.
+`max_new_tokens=128` and `temperature=0.7`. This is an output ceiling, not a target response length.
 Conversation memory lasts for the current session; send `forget everything` to
 clear it. Responses are displayed after generation completes.
 
