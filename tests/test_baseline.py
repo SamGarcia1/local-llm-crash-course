@@ -38,7 +38,7 @@ class StartupTests(unittest.TestCase):
             model_type="llama",
             model_file="orca-mini-3b.q4_0.gguf",
             lib=None,
-            max_new_tokens=25,
+            max_new_tokens=128,
             temperature=0.7,
         )
         self.assertEqual(chain.invoke({"question": "My name is Sam."})["text"], "Ready.")
