@@ -30,7 +30,7 @@ def build_llm_chain() -> LLMChain:
         model=MODEL_REPO,
         model_file=MODEL_FILE,
         model_type=MODEL_TYPE,
-        config={"max_new_tokens": 25, "temperature": 0.7},
+        config={"max_new_tokens": 128, "temperature": 0.7},
     )
     memory = ConversationBufferMemory(memory_key="history")
     return LLMChain(llm=llm, prompt=get_prompt_template(), memory=memory, verbose=True)
