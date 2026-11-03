@@ -40,6 +40,38 @@ ask a follow-up using prior context, then send `forget everything` and check a n
 conversation. Verify the Wayne Manor styling still loads. Model startup, native
 inference, browser behavior, and model-level recall require this manual smoke test.
 
+## Branding endpoints (Chainlit 1.0.200)
+
+Chainlit's header requests `/logo?theme=dark` or `/logo?theme=light`;
+its HTML requests `/favicon`. These are separate from `/public/...`.
+The stock handlers search under the working directory captured at Chainlit
+import time (`APP_ROOT`) and use the first matching filename, falling back to
+bundled Chainlit assets. The filenames already in this repository are supported;
+no additional TOML option or different asset directory is required.
+
+Alfred installs a small branding middleware for these two paths only. It serves
+the exact PNG files from `public/` beside `branding.py`, independently of
+Chainlit's captured root or other matching extensions. Responses use
+`Cache-Control: no-store`; missing files return 404 instead of silently showing
+Chainlit branding. All other requests, including chat and WebSockets, pass through.
+
+After pulling this branch in Codespaces, stop the existing process and restart
+Alfred from the repository root. Open the forwarded port in a standalone tab.
+Run the focused check with:
+
+```bash
+python -m unittest discover -s tests -p test_branding.py -v
+curl -fsS -D /tmp/alfred-logo.headers 'http://localhost:8000/logo?theme=dark' -o /tmp/alfred-logo.png
+sha256sum /tmp/alfred-logo.png public/logo_dark.png
+curl -fsS http://localhost:8000/favicon -o /tmp/alfred-favicon.png
+sha256sum /tmp/alfred-favicon.png public/favicon.png
+```
+
+Each hash pair must match. The response headers should include `image/png` and
+`Cache-Control: no-store`. Also check `/logo?theme=light` and refresh the app tab.
+The separate Chainlit watermark below the composer is bundled SVG artwork and
+is not changed by these endpoints.
+
 # The Local LLM Crash Course - Build Your Own GPT in 2 hours!
 This is the courseware and Codespace for the [The Local LLM Crash Course - Build Your Own GPT in 2 hours](https://www.udemy.com/course/the-local-llm-crash-course-build-a-hugging-face-ai-chatbot/?referralCode=EAD6017AA0001257DD9A)! Have fun with the course and use the Q&A if you run into any issues!
 
