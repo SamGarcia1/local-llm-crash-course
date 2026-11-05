@@ -20,7 +20,64 @@ Hugging Face and requires network access and enough memory to load it.
 Generation uses the pinned CTransformers wrapper's `config` dictionary with
 `max_new_tokens=128` and `temperature=0.7`. This is an output ceiling, not a target response length.
 Conversation memory lasts for the current session; send `forget everything` to
-clear it. Responses are displayed after generation completes.
+clear it. Responses stream progressively into one message, which is finalized
+with the complete returned answer.
+
+## Alfred 0.2 — Streaming responses
+
+A per-request LangChain callback forwards each generated text chunk to the same
+Chainlit message. Inference still runs through `cl.make_async` in a worker thread;
+`cl.run_sync` delivers tokens on Chainlit's event loop. Model, generation settings,
+branding and dependencies are unchanged.
+
+LangChain saves the complete successful turn to session memory once. Partial
+tokens and error notices are not added to memory. A per-session lock serializes
+generation and `forget everything`; a reset submitted during generation waits
+for that turn to finish and then clears memory. Different sessions remain independent.
+
+Stop or browser disconnect signals cooperative cancellation. Requests already
+queued in that session are discarded; a new request after reconnect can proceed.
+The worker must exit before the lock is released, and failed/interrupted turns
+are rolled back without losing earlier successful turns. Errors finalize the same
+message with a short notice, without creating another answer.
+
+### Verify in Codespaces
+
+Use Python 3.11 and the existing pinned requirements. Run:
+
+```bash
+python -m unittest discover -s tests -v
+python -m chainlit run langchain_app.py --host 0.0.0.0 --port 8000 -w
+```
+
+Open forwarded port 8000 in a standalone browser tab and check:
+
+1. Ask for a short explanation. Text should appear progressively in one message;
+   completion must not produce a duplicate answer or a lingering streaming cursor.
+2. Say `My name is Sam`, then ask `What is my name?` to exercise follow-up context.
+3. Send `forget everything` and confirm the reset acknowledgement. Repeat during
+   generation if the UI permits: reset should finish after the active turn, and
+   a subsequent prompt must not contain the old conversation.
+4. Stop a response mid-generation, then ask another question. The interrupted
+   turn should not enter memory, and the next response should stream normally.
+5. Close/reload the browser during generation, reopen the app, and submit another
+   question. No old response should keep streaming into the new one. A reconnect
+   within the retained session may preserve earlier completed turns; a new session
+   starts fresh. There is no partial-stream replay or persistent history feature.
+6. Check the header, favicon, styling and unavailable-model message remain unchanged.
+
+Automated tests mock native inference and the UI transport while exercising the
+real pinned LangChain callback, memory, worker-thread and `cl.run_sync` bridge.
+They cover incremental delivery, completion, reset races, errors, cancellation,
+disconnects and session isolation without downloading model weights.
+
+Streaming does not shorten prompt evaluation or model loading. Each token adds a
+UI emission; measure real latency on Codespaces. Cancellation cannot forcibly stop
+a native call already computing a token: cleanup and queued requests may wait for
+that call to return. If the browser has disconnected, final UI delivery is best
+effort; server-side streaming state is cleared, but the closed browser cannot be
+updated. A complete successful inference remains in memory if only its final UI
+update fails. The existing context-window limit and unbounded history are unchanged.
 
 ## Baseline checks
 
@@ -102,4 +159,3 @@ The dataset on Hugging Face: https://huggingface.co/datasets/Open-Orca/OpenOrca
 ```
 pip install langchain langchain-community
 ```
-

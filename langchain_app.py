@@ -6,6 +6,7 @@ from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain_community.llms import CTransformers
 from langchain_core.prompts import PromptTemplate
+from streaming import StreamingSession, stream_response
 
 install_branding(chainlit_app)
 
@@ -65,13 +66,33 @@ async def on_message(message: cl.Message):
         await cl.Message(content="The model is unavailable right now. Sorry.").send()
         return
 
-    if message.content.strip().lower() == "forget everything":
-        llm_chain.memory.clear()
-        await cl.Message(
-            content="Uh oh, I've just forgotten our conversation history"
-        ).send()
-        return
+    state = cl.user_session.get("streaming_state")
+    if state is None:
+        state = StreamingSession()
+        cl.user_session.set("streaming_state", state)
+    generation = state.generation
 
-    response = await cl.make_async(llm_chain.invoke)({"question": message.content})
-    answer = response.get("text", str(response))
-    await cl.Message(content=answer).send()
+    async with state.lock:
+        # Discard requests queued before a Stop/disconnect. A reconnected
+        # session can submit new requests using the same conversation memory.
+        if generation != state.generation:
+            return
+        if message.content.strip().lower() == "forget everything":
+            llm_chain.memory.clear()
+            await cl.Message(
+                content="Uh oh, I've just forgotten our conversation history"
+            ).send()
+            return
+        await stream_response(llm_chain, message.content, state)
+
+
+@cl.on_stop
+async def on_stop():
+    state = cl.user_session.get("streaming_state")
+    if state is not None:
+        state.interrupt()
+
+
+@cl.on_chat_end
+async def on_chat_end():
+    await on_stop()
