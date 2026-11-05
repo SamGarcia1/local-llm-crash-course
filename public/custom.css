@@ -87,3 +87,72 @@ div.step button[aria-label="Copy"] {
 div.step button[aria-label="Copy"]:hover {
   opacity: 1 !important;
 }
+
+/* ALFRED 0.3 — The Pulse (Chainlit 1.0.200 default Running indicator only) */
+div.step button[id="-loading"] {
+  min-width: 0;
+  min-height: 28px;
+  padding: 4px 6px;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 4px;
+  color: var(--alfred-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: none;
+  transition: none;
+}
+
+div.step button[id="-loading"]:hover,
+div.step button[id="-loading"]:active {
+  background: transparent;
+  box-shadow: none;
+}
+
+div.step button[id="-loading"]:focus-visible,
+div.step button[id="-loading"].Mui-focusVisible {
+  outline: 2px solid var(--alfred-brass);
+  outline-offset: 3px;
+}
+
+div.step button[id="-loading"] .MuiButton-startIcon {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+div.step button[id="-loading"] .MuiCircularProgress-root {
+  /* Retain the native 16px box and progressbar semantics. */
+  color: var(--alfred-brass);
+  transform: none;
+  animation: alfred-running-pulse 1.8s ease-in-out infinite;
+}
+
+div.step button[id="-loading"] .MuiCircularProgress-circle {
+  animation: none;
+  stroke-width: 3;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+@keyframes alfred-running-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  div.step button[id="-loading"] .MuiCircularProgress-root {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* hide_cot can briefly restore Running after streaming=false, before task_end.
+   Once this step has rendered text, keep only its answer visible. Older browsers
+   without :has retain Chainlit's native behavior. Tool indicators are untouched. */
+@supports selector(:has(*)) {
+  div.step:has(.markdown-body:not(:empty)) button[id="-loading"] {
+    display: none;
+  }
+}
