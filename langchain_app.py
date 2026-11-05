@@ -1,8 +1,13 @@
 import chainlit as cl
+from chainlit.server import app as chainlit_app
+
+from branding import install_branding
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain_community.llms import CTransformers
 from langchain_core.prompts import PromptTemplate
+
+install_branding(chainlit_app)
 
 MODEL_REPO = "zoltanctoth/orca_mini_3B-GGUF"
 MODEL_FILE = "orca-mini-3b.q4_0.gguf"
@@ -30,8 +35,7 @@ def build_llm_chain() -> LLMChain:
         model=MODEL_REPO,
         model_file=MODEL_FILE,
         model_type=MODEL_TYPE,
-        max_new_tokens=25,
-        temperature=0.7,
+        config={"max_new_tokens": 128, "temperature": 0.7},
     )
     memory = ConversationBufferMemory(memory_key="history")
     return LLMChain(llm=llm, prompt=get_prompt_template(), memory=memory, verbose=True)
