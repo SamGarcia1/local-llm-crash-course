@@ -6,7 +6,7 @@
 
 
 :root {
-  --alfred-bg: #141412;
+  --alfred-bg: #171816;
   --alfred-surface: #292923;
   --alfred-brass: #B3986B;
   --alfred-ivory: #F1EEE6;
@@ -157,13 +157,10 @@ div.step button[id="-loading"] .MuiCircularProgress-circle {
   }
 }
 
-/* ALFRED 0.4 — Header wordmark only.
-   The current 3:1 PNG renders at 75 × 25px. Keep its rightmost 70%:
-   this removes the framed A without rescaling the ALFRED lettering.
-   Scoped to the header; login logos, message avatars and favicon are unchanged. */
+/* ALFRED 0.4 — Dedicated header wordmark; leave other logo uses alone. */
 header.MuiAppBar-root img[alt="logo"] {
-  width: 52.5px;
+  content: url("/public/alfred-wordmark.svg");
+  width: 76.5px;
   height: 25px;
-  object-fit: cover;
-  object-position: right center;
+  object-fit: contain;
 }

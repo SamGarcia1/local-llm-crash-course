@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Alfred — Signal</title>
+  <desc id="desc">Two concentric rings, four radial tick pairs, and a central dot.</desc>
+  <g fill="none" stroke="#B69B70" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="64" cy="64" r="49"/>
+    <circle cx="64" cy="64" r="37"/>
+    <path d="M64 15v7 M64 27v5 M64 96v5 M64 106v7 M15 64h7 M27 64h5 M96 64h5 M106 64h7"/>
+  </g>
+  <circle cx="64" cy="64" r="4.8" fill="#E6E1D5"/>
+</svg>

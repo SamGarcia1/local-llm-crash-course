@@ -80,7 +80,7 @@ hide_cot = true
 
 # Override default MUI dark theme. (Check theme.ts)
 [UI.theme.dark]
-    background = "#141412"
+    background = "#171816"
     paper = "#292923"
 
     [UI.theme.dark.primary]

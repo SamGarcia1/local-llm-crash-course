@@ -17,7 +17,7 @@ class BrandingAssets:
         filename = None
         if scope["type"] == "http" and scope["method"] in ("GET", "HEAD"):
             if scope["path"] == "/favicon":
-                filename = "favicon.png"
+                filename = "alfred-signal.svg"
             elif scope["path"] == "/logo":
                 theme = Request(scope).query_params.get("theme", "light")
                 if theme in ("dark", "light"):
@@ -28,7 +28,9 @@ class BrandingAssets:
         path = PUBLIC_DIR / filename
         if path.is_file():
             response = FileResponse(
-                path, media_type="image/png", headers={"Cache-Control": "no-store"}
+                path,
+                media_type="image/svg+xml" if path.suffix == ".svg" else "image/png",
+                headers={"Cache-Control": "no-store"},
             )
         else:
             response = Response("Alfred branding asset missing", status_code=404)
