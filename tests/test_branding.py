@@ -24,11 +24,9 @@ class BrandingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             public = Path(directory) / "public"
             public.mkdir()
-            for filename in ("alfred-signal.svg", "logo_dark.png", "logo_light.png"):
+            for filename in ("alfred-signal.svg", "alfred-wordmark.svg"):
                 (public / filename).write_bytes(
-                    b'<svg xmlns="http://www.w3.org/2000/svg"/>'
-                    if filename.endswith(".svg")
-                    else b"\x89PNG\r\n\x1a\n" + filename.encode()
+                    f'<svg xmlns="http://www.w3.org/2000/svg"><title>{filename}</title></svg>'.encode()
                 )
             previous = Path.cwd()
             try:
@@ -38,16 +36,16 @@ class BrandingTests(unittest.TestCase):
                 with patch.object(branding, "PUBLIC_DIR", public), TestClient(app) as client:
                     for url, filename in (
                         ("/favicon", "alfred-signal.svg"),
-                        ("/logo?theme=dark", "logo_dark.png"),
-                        ("/logo?theme=light", "logo_light.png"),
-                        ("/logo", "logo_light.png"),
+                        ("/logo?theme=dark", "alfred-wordmark.svg"),
+                        ("/logo?theme=light", "alfred-wordmark.svg"),
+                        ("/logo", "alfred-wordmark.svg"),
                     ):
                         response = client.get(url)
                         self.assertEqual(response.status_code, 200)
                         self.assertEqual(response.content, (public / filename).read_bytes())
                         self.assertEqual(
                             response.headers["content-type"],
-                            "image/svg+xml" if filename.endswith(".svg") else "image/png",
+                            "image/svg+xml",
                         )
                         self.assertEqual(response.headers["cache-control"], "no-store")
                     for url in ("/project/settings", "/logo?theme=invalid"):
@@ -84,15 +82,33 @@ class AvatarTests(unittest.IsolatedAsyncioTestCase):
             message.send.assert_awaited_once()
 
 
-class SignalAssetTests(unittest.TestCase):
-    def test_favicon_serves_the_approved_svg_without_conversion(self):
+class BrandingAssetTests(unittest.TestCase):
+    def test_real_assets_get_head_and_cache_headers(self):
         app = Starlette()
         branding.install_branding(app)
         with TestClient(app) as client:
-            response = client.get("/favicon")
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.headers["content-type"], "image/svg+xml")
-            self.assertEqual(
-                response.content,
-                (branding.PUBLIC_DIR / "alfred-signal.svg").read_bytes(),
-            )
+            for url, filename in (
+                ("/favicon", "alfred-signal.svg"),
+                ("/logo?theme=dark", "alfred-wordmark.svg"),
+                ("/logo?theme=light", "alfred-wordmark.svg"),
+                ("/logo", "alfred-wordmark.svg"),
+            ):
+                with self.subTest(url=url):
+                    response = client.get(url)
+                    expected = (branding.PUBLIC_DIR / filename).read_bytes()
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.headers["content-type"], "image/svg+xml")
+                    self.assertEqual(response.headers["cache-control"], "no-store")
+                    self.assertEqual(response.content, expected)
+                    head = client.head(url)
+                    self.assertEqual(head.status_code, 200)
+                    self.assertEqual(head.content, b"")
+                    self.assertEqual(head.headers["content-type"], "image/svg+xml")
+                    self.assertEqual(head.headers["cache-control"], "no-store")
+                    self.assertEqual(int(head.headers["content-length"]), len(expected))
+                    # Do not reuse a browser's previously cached logo/icon response.
+                    conditional = client.get(
+                        url, headers={"If-None-Match": response.headers["etag"]}
+                    )
+                    self.assertEqual(conditional.status_code, 200)
+                    self.assertEqual(conditional.content, expected)

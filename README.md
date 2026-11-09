@@ -165,12 +165,15 @@ pip install langchain langchain-community
 `public/alfred-signal.svg` is the approved, unmodified Signal Technical source.
 The assistant avatar references it directly through Chainlit's `Avatar` API;
 `branding.py` serves the same bytes at `/favicon` with `image/svg+xml`. No PNG
-conversion or second copy of the symbol is needed. Existing PNGs are retained
-for legacy logo routes; the old favicon PNG is no longer used by `/favicon`.
+conversion or second copy of the symbol is needed. Existing PNGs are retained as legacy assets but are no longer served by
+`/logo` or `/favicon`.
 
-The header alone displays `public/alfred-wordmark.svg` through a scoped CSS image
-replacement. This replaces the temporary crop and keeps the native 25px header
-image box, padding, and navigation gap. The outlined lettering uses Cormorant
+Chainlit's native header image requests `/logo?theme=dark` or `/logo?theme=light`.
+Both routes now serve `public/alfred-wordmark.svg` directly as `image/svg+xml`,
+with `Cache-Control: no-store`. No CSS content replacement or crop is needed.
+The intrinsic SVG dimensions keep the native 25px header image box, padding,
+and navigation gap. Chainlit shares this endpoint with its login screen, which
+therefore also displays the wordmark; the Signal avatar uses its separate URL. The outlined lettering uses Cormorant
 Garamond Medium (500), ivory `#E6E1D5`, a 20px em, and 0.03em tracking. Its width
 is 76.5px. The SVG contains glyph paths so no runtime font download is needed.
 The font source is Google Fonts' `ofl/cormorantgaramond/CormorantGaramond[wght].ttf`
@@ -178,28 +181,48 @@ The font source is Google Fonts' `ofl/cormorantgaramond/CormorantGaramond[wght].
 the asset. Manrope remains the interface font. The dark background is `#171816`.
 The existing Pulse styling and animation are unchanged.
 
-Verify in Codespaces after restarting the server:
+Verify in Codespaces after fully stopping and restarting the server (Ctrl-C,
+then launch again). Chainlit's `-w` reloads application modules but retains the
+installed ASGI middleware instance. Its registration guard intentionally avoids
+duplicates, so editing `branding.py` requires a process restart. A page refresh
+or watch-mode reload alone cannot replace that middleware.
 
 1. Run `python -m unittest discover -s tests -v`, then
    `python -m chainlit run langchain_app.py --host 0.0.0.0 --port 8000 -w`.
 2. At desktop width, confirm the header shows only the ivory ALFRED wordmark;
    check both themes. Confirm no clipping or navigation displacement beyond
    the intended wordmark width. Chainlit's native narrow-screen header hiding
-   remains unchanged. Login logo rendering is not changed.
+   remains unchanged. The login screen also uses the shared wordmark endpoint.
 3. Start a new chat and confirm Signal appears beside Alfred's welcome message,
    streamed answer, reset confirmation, and unavailable-model message. The user
    avatar should remain unchanged. Chainlit 1.0.200 uses a native 26px avatar;
    also preview the SVG at 32px and 40px without changing its geometry.
-4. Open `/favicon` and compare it with `/public/alfred-signal.svg`. Check the tab
-   icon in a fresh browser tab/profile if the browser retains the old favicon.
+4. Inspect the document's `<link rel="icon" href="/favicon">`. In Network,
+   verify `/favicon` returns 200, `Content-Type: image/svg+xml`, and
+   `Cache-Control: no-store`; its bytes must equal `/public/alfred-signal.svg`.
+   Do the same for both `/logo?theme=dark` and `/logo?theme=light`, comparing
+   them to `/public/alfred-wordmark.svg`. Open the header's exact `currentSrc`
+   to confirm the endpoint itself serves the new artwork. Check the tab icon in
+   a fresh browser tab/profile if the browser retains an older favicon entry.
 5. Send a prompt, observe Pulse then streaming, press Stop, send a follow-up,
    and test `forget everything`.
 
 Validation: all 20 mocked-inference/configuration/branding tests pass on Python
-3.11 with Chainlit 1.0.200 and LangChain 0.1.16. A Chromium browser fixture checked
-the 25px header box, 26/32/40px avatar boxes, and 16/32px favicon sizes with the
-actual assets and stylesheet. Live Codespaces inference and cross-browser
-checks remain manual. Signal's original 1.9-unit strokes become subpixel at
-small sizes, so its details are subtle at 16px; no thickening was applied.
-CSS image replacement retains Chainlit's native generic `logo` alt text and
-underlying PNG `src`; the dedicated wordmark is the rendered header content.
+3.11 with Chainlit 1.0.200 and LangChain 0.1.16. Regression checks cover actual
+SVG bytes, both logo themes, favicon, GET/HEAD, MIME type, no-store headers and
+conditional requests. The actual local Chainlit frontend (inference disabled)
+was checked in Chromium: header renders the wordmark in both themes at 25px,
+Signal avatar remains visible, and the document favicon link targets /favicon.
+Live HTTP responses for that link and both logo themes returned the exact SVG
+bytes with image/svg+xml and no-store. Codespaces inference and cross-browser
+checks remain manual. The approved ivory wordmark has low contrast on the
+native light theme; its color was not changed. Signal's 1.9-unit strokes remain
+subtle at favicon size. Chainlit's native generic logo alt text and narrow-screen
+logo hiding remain unchanged.
+
+The previous CSS replacement only changed the image's presentation while
+`/logo` still served the old PNG. The simplified preview did
+not establish why the CSS failed in Codespaces; direct endpoint delivery removes
+that dependency. No favicon response defect was reproduced after a clean start.
+An existing watch-mode middleware instance or a browser favicon cache may retain
+older branding; a process restart is required for middleware changes.

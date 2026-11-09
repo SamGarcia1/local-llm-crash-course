@@ -156,11 +156,3 @@ div.step button[id="-loading"] .MuiCircularProgress-circle {
     display: none;
   }
 }
-
-/* ALFRED 0.4 — Dedicated header wordmark; leave other logo uses alone. */
-header.MuiAppBar-root img[alt="logo"] {
-  content: url("/public/alfred-wordmark.svg");
-  width: 76.5px;
-  height: 25px;
-  object-fit: contain;
-}

@@ -21,7 +21,7 @@ class BrandingAssets:
             elif scope["path"] == "/logo":
                 theme = Request(scope).query_params.get("theme", "light")
                 if theme in ("dark", "light"):
-                    filename = f"logo_{theme}.png"
+                    filename = "alfred-wordmark.svg"
         if filename is None:
             return await self.app(scope, receive, send)
 
@@ -29,7 +29,7 @@ class BrandingAssets:
         if path.is_file():
             response = FileResponse(
                 path,
-                media_type="image/svg+xml" if path.suffix == ".svg" else "image/png",
+                media_type="image/svg+xml",
                 headers={"Cache-Control": "no-store"},
             )
         else:
