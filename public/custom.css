@@ -156,3 +156,14 @@ div.step button[id="-loading"] .MuiCircularProgress-circle {
     display: none;
   }
 }
+
+/* ALFRED 0.4 — Header wordmark only.
+   The current 3:1 PNG renders at 75 × 25px. Keep its rightmost 70%:
+   this removes the framed A without rescaling the ALFRED lettering.
+   Scoped to the header; login logos, message avatars and favicon are unchanged. */
+header.MuiAppBar-root img[alt="logo"] {
+  width: 52.5px;
+  height: 25px;
+  object-fit: cover;
+  object-position: right center;
+}
