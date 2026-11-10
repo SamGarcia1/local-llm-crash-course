@@ -44,6 +44,7 @@ def build_llm_chain() -> LLMChain:
 
 @cl.on_chat_start
 async def on_chat_start():
+    await cl.Avatar(name="Alfred", url="/public/alfred-signal.svg").send()
     try:
         llm_chain = build_llm_chain()
         cl.user_session.set("llm_chain", llm_chain)
