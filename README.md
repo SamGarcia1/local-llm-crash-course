@@ -165,8 +165,10 @@ pip install langchain langchain-community
 `public/alfred-signal.svg` is the approved, unmodified Signal Technical source.
 The assistant avatar references it directly through Chainlit's `Avatar` API;
 `branding.py` serves the same bytes at `/favicon` with `image/svg+xml`. No PNG
-conversion or second copy of the symbol is needed. Existing PNGs are retained as legacy assets but are no longer served by
-`/logo` or `/favicon`.
+conversion or second copy of the symbol is needed. The legacy `public/favicon.png` is now a transparent 256×256 derivative of
+Signal. `/public/favicon.png` serves that PNG; `/favicon` and `/favicon.ico`
+serve the original SVG. All three use `Cache-Control: no-store`. The document
+explicitly links `/favicon`; `/favicon.ico` is a compatibility fallback.
 
 Chainlit's native header image requests `/logo?theme=dark` or `/logo?theme=light`.
 Both routes now serve `public/alfred-wordmark.svg` directly as `image/svg+xml`,
@@ -226,3 +228,13 @@ not establish why the CSS failed in Codespaces; direct endpoint delivery removes
 that dependency. No favicon response defect was reproduced after a clean start.
 An existing watch-mode middleware instance or a browser favicon cache may retain
 older branding; a process restart is required for middleware changes.
+
+Favicon PNG generation: rasterize the unchanged `alfred-signal.svg` with Sharp
+(libvips SVG renderer) at density 576 (1024×1024), then resize to 256×256 using
+Lanczos3 and encode as RGBA PNG. This is build-time tooling only; no application
+dependency is added. Preserve the SVG viewBox and transparency, including its
+brass strokes and ivory center. Regenerate the PNG whenever the source changes.
+The legacy PNG previously contained the framed A, while the canonical /favicon
+already served Signal. This asset inconsistency is fixed; the user's persistent
+tab icon could also reflect an older running middleware instance or browser
+favicon cache, which cannot be conclusively diagnosed without that browser.

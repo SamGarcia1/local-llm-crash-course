@@ -89,6 +89,8 @@ class BrandingAssetTests(unittest.TestCase):
         with TestClient(app) as client:
             for url, filename in (
                 ("/favicon", "alfred-signal.svg"),
+                ("/favicon.ico", "alfred-signal.svg"),
+                ("/public/favicon.png", "favicon.png"),
                 ("/logo?theme=dark", "alfred-wordmark.svg"),
                 ("/logo?theme=light", "alfred-wordmark.svg"),
                 ("/logo", "alfred-wordmark.svg"),
@@ -96,14 +98,15 @@ class BrandingAssetTests(unittest.TestCase):
                 with self.subTest(url=url):
                     response = client.get(url)
                     expected = (branding.PUBLIC_DIR / filename).read_bytes()
+                    mime = "image/png" if filename.endswith(".png") else "image/svg+xml"
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.headers["content-type"], "image/svg+xml")
+                    self.assertEqual(response.headers["content-type"], mime)
                     self.assertEqual(response.headers["cache-control"], "no-store")
                     self.assertEqual(response.content, expected)
                     head = client.head(url)
                     self.assertEqual(head.status_code, 200)
                     self.assertEqual(head.content, b"")
-                    self.assertEqual(head.headers["content-type"], "image/svg+xml")
+                    self.assertEqual(head.headers["content-type"], mime)
                     self.assertEqual(head.headers["cache-control"], "no-store")
                     self.assertEqual(int(head.headers["content-length"]), len(expected))
                     # Do not reuse a browser's previously cached logo/icon response.

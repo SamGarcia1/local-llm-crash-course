@@ -16,8 +16,10 @@ class BrandingAssets:
     async def __call__(self, scope, receive, send):
         filename = None
         if scope["type"] == "http" and scope["method"] in ("GET", "HEAD"):
-            if scope["path"] == "/favicon":
+            if scope["path"] in ("/favicon", "/favicon.ico"):
                 filename = "alfred-signal.svg"
+            elif scope["path"] == "/public/favicon.png":
+                filename = "favicon.png"
             elif scope["path"] == "/logo":
                 theme = Request(scope).query_params.get("theme", "light")
                 if theme in ("dark", "light"):
@@ -29,7 +31,7 @@ class BrandingAssets:
         if path.is_file():
             response = FileResponse(
                 path,
-                media_type="image/svg+xml",
+                media_type="image/png" if filename.endswith(".png") else "image/svg+xml",
                 headers={"Cache-Control": "no-store"},
             )
         else:
