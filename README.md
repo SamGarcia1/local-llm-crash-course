@@ -305,3 +305,11 @@ parser/serialization plus the existing branding, streaming, memory, cancellation
 and error tests. Microphone permission prompts, browser recognition accuracy,
 service outages and real Codespaces audio require the manual checks above; no
 mocked test is claimed to validate actual speech recognition.
+
+### Alfred 0.6 — Manual TTS spike
+
+See [the technical investigation and test instructions](docs/tts-spike.md).
+Open `/public/tts-spike.html` on the running Alfred origin, paste a completed
+response, choose a voice and click Speak/Stop. Audio is off by default. This
+isolated experiment does not automatically read chat messages or add Voice Mode.
+Browser voices may be remote; check their labels before speaking sensitive text.

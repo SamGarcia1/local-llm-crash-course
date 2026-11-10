@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alfred — TTS spike</title>
+<link rel="icon" href="/favicon">
+<style>
+body { background:#171816; color:#E6E1D5; font:16px/1.6 system-ui,sans-serif; max-width:720px; margin:40px auto; padding:0 24px; }
+label { display:block; margin-top:20px; }
+textarea, select { box-sizing:border-box; width:100%; background:#292923; color:inherit; border:1px solid #B69B70; padding:12px; font:inherit; }
+button { background:#292923; color:#E6E1D5; border:1px solid #B69B70; padding:10px 24px; margin:16px 8px 0 0; font:inherit; cursor:pointer; }
+:focus-visible { outline:2px solid #B69B70; outline-offset:3px; }
+button:disabled { opacity:.5; cursor:default; }
+</style>
+<script type="module" src="/public/tts-spike.js"></script>
+</head>
+<body>
+<img src="/public/alfred-wordmark.svg" alt="ALFRED" height="25">
+<h1>Manual speech test</h1>
+<p>Paste a completed response below. Nothing plays until you press Speak.
+This experiment is separate from chat and does not read your conversation.</p>
+<p>Voices depend on your browser and operating system. Remote voices may send text
+to a speech service. Select a voice marked local when testing local synthesis.</p>
+<label for="text">Response to speak</label>
+<textarea id="text" rows="6" maxlength="5000" placeholder="Paste an Alfred response here"></textarea>
+<label for="voices">Voice</label>
+<select id="voices"></select>
+<button id="speak" type="button">Speak</button>
+<button id="stop" type="button">Stop</button>
+<p id="status" role="status" aria-live="polite">Idle — audio off</p>
+<p>Editing the text, changing voices, hiding this tab, or pressing Speak again
+cancels the previous speech. This page cannot detect new messages in the chat tab.</p>
+</body>
+</html>
