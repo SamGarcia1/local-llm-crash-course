@@ -238,3 +238,70 @@ The legacy PNG previously contained the framed A, while the canonical /favicon
 already served Signal. This asset inconsistency is fixed; the user's persistent
 tab icon could also reflect an older running middleware instance or browser
 favicon cache, which cannot be conclusively diagnosed without that browser.
+
+
+### Alfred 0.5 — Native voice input MVP
+
+In a supported Chrome browser, use the microphone beside the composer, allow
+microphone access, and speak. Press the recording Stop control when finished
+(or let the native silence timeout end listening). **Review and edit the text
+in the composer, then press Send.** Recognition appends text to the current
+composer draft, so clear an unwanted draft before dictating. Nothing is submitted
+automatically. The submitted transcript is an ordinary user message: it uses the
+same Orca Mini chain, streaming, session memory, generation Stop, and
+`forget everything` command as typed text.
+
+Setup uses the existing requirements only. Native recognition is enabled in
+`.chainlit/config.toml` under `[features.speech_to_text]`, with language `en-US`.
+Change that BCP-47 language tag if needed and restart the server. No Python STT
+package, API key, external account, GPU, custom JavaScript, or TTS is introduced.
+The native microphone/recording-stop control is retained; custom Signal states
+and animations are deferred. The Pulse still indicates response generation.
+
+**Privacy and compatibility:** recognition runs through the browser's Web Speech
+API, not Alfred's local LLM. Chrome may send audio to its speech-recognition
+service, so voice input is not guaranteed local, offline, or available on every
+Chrome platform. Network access and browser/organization policies can affect it.
+Avoid dictating sensitive information unless you accept the browser service's
+privacy behavior. Alfred's Python application receives the submitted text, not
+recorded audio. Text chat remains available regardless of recognition support.
+
+Chainlit 1.0.200 hides the microphone when the browser reports no speech-recognition
+support. Its native control has limited permission and transcription error
+feedback; Alfred cannot add reliable recovery messages without replacing that
+frontend. If the control appears stuck, press recording Stop, check permissions,
+and reload if needed. Denied permission: allow the microphone in Chrome's site
+settings and the operating system's privacy settings, then retry. Empty or failed
+recognition: no new transcript is available; stop recording, check microphone,
+network and language, and retry or type. Clear any partial/incorrect text before
+sending. Recording Stop and response-generation Stop are separate controls.
+
+#### Codespaces verification
+
+1. Check out `feature/alfred-0.5-voice-input`. Install the existing
+   `requirements.txt` if necessary. From the repository root, run:
+   ```sh
+   python -m unittest discover -s tests -v
+   python -m chainlit run langchain_app.py --host 0.0.0.0 --port 8000 -w
+   ```
+2. Open the forwarded port's **HTTPS URL in a full Chrome tab**, rather than an
+   embedded preview. Allow microphone access for that Codespaces origin. Different
+   Codespaces URLs may need separate permission grants.
+3. Start a chat and verify the ALFRED header, Signal avatar/favicon, and text chat.
+   Dictate “My name is Sam,” stop recording, and confirm text appears in the
+   composer without generating a response. Correct it if necessary, then Send.
+4. Confirm The Pulse followed by a single streamed answer. Type “What is my name?”
+   in the same chat to verify shared memory. Dictate a follow-up and submit it too.
+5. Stop a generated response, then send another message. Submit `forget everything`
+   (typed or dictated, correcting recognition/punctuation to that exact command)
+   and confirm the existing reset behavior.
+6. Deny microphone permission, try silence, and simulate unavailable recognition
+   (for example, a browser without Web Speech support). Confirm typed chat still
+   works. Restore permission and retry. Check that failed recognition does not
+   automatically submit partial text or overwrite an existing draft.
+
+Automated validation covers the native speech settings through Chainlit's own
+parser/serialization plus the existing branding, streaming, memory, cancellation,
+and error tests. Microphone permission prompts, browser recognition accuracy,
+service outages and real Codespaces audio require the manual checks above; no
+mocked test is claimed to validate actual speech recognition.

@@ -31,11 +31,11 @@ latex = false
 # Authorize users to upload files with messages
 multi_modal = true
 
-# Allows user to use speech to text
+# Native browser speech recognition: review the transcript, then press Send.
+# Chrome may process audio remotely; this is not local/offline transcription.
 [features.speech_to_text]
-    enabled = false
-    # See all languages here https://github.com/JamesBrill/react-speech-recognition/blob/HEAD/docs/API.md#language-string
-    # language = "en-US"
+    enabled = true
+    language = "en-US"
 
 [UI]
 # Name of the app and chatbot.
