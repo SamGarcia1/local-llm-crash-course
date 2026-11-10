@@ -20,6 +20,18 @@ class ConfigurationTests(unittest.TestCase):
         self.assertEqual(config["project"]["allow_origins"], ["*"])
         self.assertEqual(config["UI"]["name"], "Alfred")
 
+    def test_native_voice_settings_load_in_pinned_chainlit(self):
+        # Exercise Chainlit's parser and frontend settings serialization,
+        # rather than only checking that the TOML contains the desired keys.
+        from dataclasses import asdict
+        from importlib import import_module
+
+        chainlit_config = import_module("chainlit.config")
+        with patch.object(chainlit_config, "config_file", str(ROOT / ".chainlit/config.toml")):
+            features = chainlit_config.load_settings()["features"]
+        speech = asdict(features)["speech_to_text"]
+        self.assertEqual(speech, {"enabled": True, "language": "en-US"})
+
 
 class StartupTests(unittest.TestCase):
     def test_chain_configuration_and_memory(self):
